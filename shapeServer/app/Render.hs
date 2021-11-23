@@ -9,6 +9,12 @@ import Shapes
 --             and the size of the output device to render into
 data Window = Window Point Point (Int,Int)
 
+-- sets what slice of a drawing will be displayed in the window
+-- the 2 points are the bounding box in the drawing of what is being drawn
+-- the tuple of integers are the region of the terminal window used to do that drawing
+makeWindow :: Point -> Point -> (Int,Int) -> Window
+makeWindow p0 p1 size = Window p0 p1 size
+
 -- Default window renders a small region around the origin into
 -- a 50x50 character image
 defaultWindow :: Window
@@ -22,6 +28,7 @@ samples :: Double -> Double -> Int -> [Double]
 samples c0 c1 n = take n [ c0, c0 + (c1-c0) / (fromIntegral $ n-1) .. ]
 
 -- Generate the matrix of points corresponding to the pixels of a window.
+-- Give us a 2D list of all the available character coordinate positions in the terminal, i.e. all the possble coordinates, i.e. all the pixels
 pixels :: Window -> [[Point]]
 pixels (Window p0 p1 (w,h)) =
   [ [ point x y | x <- samples (getX p0) (getX p1) w ]
@@ -34,11 +41,12 @@ coords (Window _ _ (w,h)) = [ [(x,y) | x <- [0..w]] | y <- [0..h] ]
 
 -- render an drawing (image/shape) into a given window
 render :: Window -> Drawing -> IO ()
-render win sh =  sequence_ $ map pix locations
+render win sh =  sequence_ $ map pix locations                  -- we map our pixel testing function over our list of locations that constitute the shape, sequence_ joins all monadic actions together, so it's appplication here means that it generates a list of IO actions which are then all performed one after the other and draw the shape
   where 
-    pix (p,(x,y)) | p `inside` sh = goto x y  >> putStr "*"
-                  | otherwise     = return ()
+    pix (p,(x,y)) | p `inside` sh = goto x y  >> putStr "*"     -- testing a position on the drawing plane (p) to see if it is inside the shape we are drawing. If it is then go to the corresponding (x,y) coordinates in the terminal window and fill the pixel
+                  | otherwise     = return ()                   -- if p is not inside the shape we're drawing, do nothing
     -- locations is a list of abstract coords ("pixels") and
     -- corresponding screen coords
     locations :: [ (Point, (Int,Int) ) ]
-    locations = concat $ zipWith zip (pixels win) (coords win)
+    locations = concat $ zipWith zip (pixels win) (coords win)    -- taking all the coordinates of the possible places we could pace characters, generating coordinates on the abstract drawing plane for each one
+                                                                  -- AKA creating a list of pairs where the first element of each pair is some location in the drawing and the second element is the corresponding coordinate on the screen
