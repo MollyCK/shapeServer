@@ -1,4 +1,4 @@
-module Render(Window,defaultWindow,samples,render) where
+module Render(Window,defaultWindow,samples,renderCustomShape) where
 import Ansi
 import Shapes
 
@@ -61,8 +61,8 @@ render window shape =  sequence_ $ map pix locations     -- we map our pixel tes
                                                                   -- AKA creating a list of pairs where the first element of each pair is some location in the drawing and the second element is the corresponding coordinate on the screen
 
 
-renderShape :: String -> Window -> Drawing -> IO()
-renderShape path window shape = writePng path $ generateImage pixRenderer widthInPixels heightInPixels
+renderCustomShape :: Window -> Drawing -> IO()
+renderCustomShape window shape = writePng "output.png" $ generateImage pixRenderer widthInPixels heightInPixels
   where
     Window _ _ (widthInPixels, heightInPixels) = window
     pixRenderer x y | pix `inside` shape = PixelRGB8 255 255 255
