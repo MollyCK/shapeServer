@@ -19,7 +19,7 @@ makeWindow p0 p1 size = Window p0 p1 size
 -- Default window renders a small region around the origin into
 -- a 50x50 character image
 defaultWindow :: Window
-defaultWindow = Window (point (-1.5) (-1.5)) (point 1.5 1.5) (50,50)
+defaultWindow = Window (point (-1) (-1)) (point 1 1) (520,520)
 
 
 -- Generate a list of evenly spaced samples between two values.
@@ -60,11 +60,14 @@ render window shape =  sequence_ $ map pix locations     -- we map our pixel tes
     locations = concat $ zipWith zip (pixels window) (coords window)    -- taking all the coordinates of the possible places we could pace characters, generating coordinates on the abstract drawing plane for each one
                                                                   -- AKA creating a list of pairs where the first element of each pair is some location in the drawing and the second element is the corresponding coordinate on the screen
 
+colourToRGB :: ColourRGB -> PixelRGB8
+colourToRGB (ColourRGB r g b) = PixelRGB8 (round $ r) (round $ g) (round $ b)
 
-renderCustomShape :: Window -> Drawing -> IO()
-renderCustomShape window shape = writePng "output.png" $ generateImage pixRenderer widthInPixels heightInPixels
+renderCustomShape :: String -> Window -> Drawing -> IO()
+renderCustomShape path window shape = writePng path $ generateImage pixRenderer widthInPixels heightInPixels
   where
+    [(_, _, c)] = shape
     Window _ _ (widthInPixels, heightInPixels) = window
-    pixRenderer x y | pix `inside` shape = PixelRGB8 255 255 255
+    pixRenderer x y | pix `inside` shape = colourToRGB $ colourAt pix shape
                     | otherwise = PixelRGB8 0 0 0
         where pix = singlePixel window (x,y)

@@ -1,10 +1,10 @@
 name:                shapeServer
 version:             0.1.0.0
-github:              "githubuser/shapeServer"
+github:              "MollyCK/shapeServer"
 license:             BSD3
-author:              "Author name here"
+author:              "MollyCK"
 maintainer:          "example@example.com"
-copyright:           "2021 Author name here"
+copyright:           "2021 MollyCK"
 
 extra-source-files:
 - README.md
@@ -26,6 +26,8 @@ dependencies:
 - scotty
 - text
 - regex-posix
+- mtl
+- wai-middleware-static
 
 library:
   source-dirs: src

@@ -1,7 +1,7 @@
 module Shapes(
-  Shape, Point, Vector, Transform, Drawing,
+  Shape, Point, Vector, Transform, Drawing, ColourRGB(ColourRGB), colourrgb, colourAt,
   point, getX, getY,
-  empty, circle, square,
+  empty, circle, square, polygon,
   identity, translate, rotate, scale, (<+>),
   inside)  where
 
@@ -79,9 +79,22 @@ transform (Rotate m)                 p = (invert m) `mult` p
 transform (Compose t1 t2)            p = transform t2 $ transform t1 p
 
 
+--Colours
+data ColourRGB = ColourRGB Double Double Double
+            deriving Show 
+
+colourrgb = ColourRGB
+
+
+colourAt :: Point -> Drawing -> ColourRGB
+colourAt p ((t,s,c):ds) = if inside1 p (t,s,c)
+                            then c
+                          else colourAt p ds
+
+
 -- Drawings
 
-type Drawing = [(Transform,Shape)]
+type Drawing = [(Transform,Shape, ColourRGB)]
 
 
 -- interpretation function for drawings
@@ -89,14 +102,14 @@ type Drawing = [(Transform,Shape)]
 inside :: Point -> Drawing -> Bool
 inside p d = or $ map (inside1 p) d
 
-inside1 :: Point -> (Transform, Shape) -> Bool
-inside1 p (t,s) = insides (transform t p) s
+inside1 :: Point -> (Transform, Shape, ColourRGB) -> Bool
+inside1 p (t,s,c) = insides (transform t p) s
 
 insides :: Point -> Shape -> Bool
 p `insides` Empty = False
 p `insides` Circle = distance p <= 1
 p `insides` Square = maxnorm  p <= 1
-p `insides` Polygon ps = insidePolygon p (head ps) ps False
+p `insides` Polygon ps = insidePolygon p (head ps) ps False -- passing in False to begin with because the C code initialises "int c = 0"
 
 {-  Algorithm in C code (https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html)
   int pnpoly(int nvert, float *vertx, float *verty, float testx, float testy)
@@ -113,21 +126,14 @@ p `insides` Polygon ps = insidePolygon p (head ps) ps False
 
 
 insidePolygon :: Point -> Point -> [Point] -> Bool -> Bool
--- for a list that only has 1 or 0 items left (the iterations have finished and there are no more points to check OR the user passed in an empty shape)
-insidePolygon _ _ points c | length points <= 1 = c
--- for the first iteration where the ith point is the first point in the list and c is 0 (so false)
-insidePolygon testPoint ithPoint (p:q:ps) False | (getX ithPoint == getX p) && (getY ithPoint == getY p) = do
-        if ((getY p > getY testPoint) /= (getY jthPoint > getY testPoint)) && (getX testPoint < ((getX jthPoint - getX p) * (getY testPoint - getY p) / ( getY jthPoint - getY p) + getX p))
-            then insidePolygon testPoint q (p:q:ps) (not False)
-        else insidePolygon testPoint q (p:q:ps) False
-        where jthPoint = last ps
--- for any iteration after i = 0 (so i = 1 and j = 0 which means that ithPoint = q and jthPoint = p)
-insidePolygon testPoint _ (p:q:ps) c = do
-          if (((getY q) > (getY testPoint)) /= ((getY p) > (getY testPoint))) && ((getX testPoint) < (((getX p)-(getX q)) * ((getY testPoint)-(getY q)) / ((getY p)-(getY q)) + (getX q)))
-            then insidePolygon testPoint q (q:ps) (not c)
-          else insidePolygon testPoint q (q:ps) c
--- this line is just here to get rid of annoying "non-exhaustive pattern matches" warning
-insidePolygon _ _ _ _ = False
+-- for a list that only has 0 Points left (the iterations have finished and there are no more points to check OR the user passed in an empty shape)
+insidePolygon _ _ [] c = c
+insidePolygon testPoint jthPoint (ithPoint:ps) c = insidePolygon testPoint ithPoint ps nextC
+  where
+    nextC =
+      if ((getY ithPoint) > (getY testPoint)) /= ((getY jthPoint) > (getY testPoint)) && (getX testPoint) < ((getX jthPoint) - (getX ithPoint)) * ((getY testPoint) - (getY ithPoint)) / ((getY jthPoint) - (getY ithPoint)) + (getX ithPoint)
+        then not c
+      else     c
 
 distance :: Point -> Double
 distance (Vector x y ) = sqrt ( x**2 + y**2 )
