@@ -80,6 +80,7 @@ transform (Compose t1 t2)            p = transform t2 $ transform t1 p
 
 
 --Colours
+
 data ColourRGB = ColourRGB Double Double Double
             deriving Show 
 
@@ -123,7 +124,6 @@ p `insides` Polygon ps = insidePolygon p (head ps) ps False -- passing in False 
     return c;
   }
 -}
-
 
 insidePolygon :: Point -> Point -> [Point] -> Bool -> Bool
 -- for a list that only has 0 Points left (the iterations have finished and there are no more points to check OR the user passed in an empty shape)

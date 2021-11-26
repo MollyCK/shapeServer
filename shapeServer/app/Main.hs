@@ -37,14 +37,14 @@ content = do R.renderHTML (
 -- pre-rendering images 
 
 main = do 
-   -- renderCustomShape "static/singleEllipse.png" defaultWindow singleEllipse
-   -- renderCustomShape "static/singleCircle.png" defaultWindow singleCircle
-   -- renderCustomShape "static/singleSquare.png" defaultWindow singleSquare
-  --  renderCustomShape "static/singleRectangle.png" defaultWindow singleRectangle
+    renderCustomShape "static/singleEllipse.png" defaultWindow singleEllipse
+    renderCustomShape "static/singleCircle.png" defaultWindow singleCircle
+    renderCustomShape "static/singleSquare.png" defaultWindow singleSquare
+    renderCustomShape "static/singleRectangle.png" defaultWindow singleRectangle
     renderCustomShape "static/singlePolygon.png" defaultWindow singlePolygon
 
-  --  renderCustomShape "static/overlapCircle.png" defaultWindow overlapCircle
-  --  renderCustomShape "static/overlapSquare.png" defaultWindow overlapSquare
+    renderCustomShape "static/overlapCircle.png" defaultWindow overlapCircle
+    renderCustomShape "static/overlapSquare.png" defaultWindow overlapSquare
 -}
 
 --{-
@@ -83,8 +83,6 @@ main = scotty 3000 ( do
 
 ---}
 exampleDrawing = [(scale (point 0.5 0.25) <+> translate (point 0.8 0.4), circle, (ColourRGB 255 0 0)), (scale (point 0.5 0.25) <+> translate (point 0.4 0.4), circle, (ColourRGB 0 255 0))]
-
-
 
 -- main = renderCustomShape "static/singleCircle.png" defaultWindow exampleDrawing
 
